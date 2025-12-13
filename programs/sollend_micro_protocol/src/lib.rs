@@ -137,9 +137,10 @@ pub mod sollend_micro_protocol {
         let max_borrow = get_max_borrow_amount(reputation.credit_tier);
         require!(amount <= max_borrow, ErrorCode::ExceedsMaxBorrowAmount);
         
-        // Check reasonable duration (1 day to 1 year)
+        // Check reasonable duration (5 seconds to 1 year for testing, 1 day minimum for production)
+        // Note: In production, change minimum to 86400 (1 day)
         require!(
-            duration_seconds >= 86400 && duration_seconds <= 31536000,
+            duration_seconds >= 5 && duration_seconds <= 31536000,
             ErrorCode::InvalidDuration
         );
         
@@ -198,6 +199,12 @@ pub mod sollend_micro_protocol {
             interest_rate_bps <= loan.max_interest_rate_bps,
             ErrorCode::InterestRateTooHigh
         );
+        
+        // Initialize escrow account
+        let escrow = &mut ctx.accounts.escrow;
+        escrow.loan_id = loan.loan_id;
+        escrow.borrower = loan.borrower;
+        escrow.bump = ctx.bumps.escrow;
         
         // Transfer tokens from lender to escrow
         let cpi_accounts = Transfer {

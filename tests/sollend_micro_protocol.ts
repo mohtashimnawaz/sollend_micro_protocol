@@ -7,6 +7,9 @@ import {
   createAccount,
   mintTo,
   getAccount,
+  getAssociatedTokenAddress,
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
 import { assert } from "chai";
@@ -133,13 +136,11 @@ describe("Sollend Micro-Lending Protocol", () => {
       program.programId
     );
     
-    // Create escrow token account
-    escrowTokenAccount = await createAccount(
-      provider.connection,
-      authority,
+    // Get the associated token account for the escrow PDA
+    escrowTokenAccount = await getAssociatedTokenAddress(
       mint,
       escrowPda,
-      null
+      true // allowOwnerOffCurve - this allows PDA to be the owner
     );
   });
 
@@ -251,6 +252,34 @@ describe("Sollend Micro-Lending Protocol", () => {
 
     it("Funds the loan", async () => {
       const interestRate = 1000; // 10%
+      
+      // Create the escrow token account before funding
+      const {
+        createAssociatedTokenAccountInstruction,
+        getAssociatedTokenAddressSync
+      } = await import("@solana/spl-token");
+      
+      const escrowAta = getAssociatedTokenAddressSync(
+        mint,
+        escrowPda,
+        true // allowOwnerOffCurve
+      );
+      
+      // Create the ATA if it doesn't exist
+      try {
+        await getAccount(provider.connection, escrowAta);
+      } catch {
+        const ix = createAssociatedTokenAccountInstruction(
+          lender.publicKey,
+          escrowAta,
+          escrowPda,
+          mint
+        );
+        const tx = new anchor.web3.Transaction().add(ix);
+        await provider.sendAndConfirm(tx, [lender]);
+      }
+      
+      escrowTokenAccount = escrowAta;
       
       const tx = await program.methods
         .fundLoan(interestRate)
@@ -380,22 +409,20 @@ describe("Sollend Micro-Lending Protocol", () => {
         program.programId
       );
       
-      defaultEscrowTokenAccount = await createAccount(
-        provider.connection,
-        authority,
+      defaultEscrowTokenAccount = await getAssociatedTokenAddress(
         mint,
         defaultEscrowPda,
-        null
+        true // allowOwnerOffCurve
       );
     });
 
     it("Creates and funds a loan that will default", async () => {
-      // Create loan request
+      // Create loan request with short duration for testing (5 seconds)
       await program.methods
         .createLoanRequest(
           defaultLoanId,
           new BN(5_000_000_000), // 5 tokens
-          new BN(1), // 1 second duration (will expire immediately)
+          new BN(5), // 5 seconds duration for testing
           1000
         )
         .accounts({
@@ -407,6 +434,29 @@ describe("Sollend Micro-Lending Protocol", () => {
         })
         .signers([borrower])
         .rpc();
+
+      // Create the escrow token account before funding
+      const escrowAta = getAssociatedTokenAddressSync(
+        mint,
+        defaultEscrowPda,
+        true // allowOwnerOffCurve
+      );
+      
+      // Create the ATA if it doesn't exist
+      try {
+        await getAccount(provider.connection, escrowAta);
+      } catch {
+        const ix = createAssociatedTokenAccountInstruction(
+          lender.publicKey,
+          escrowAta,
+          defaultEscrowPda,
+          mint
+        );
+        const tx = new anchor.web3.Transaction().add(ix);
+        await provider.sendAndConfirm(tx, [lender]);
+      }
+      
+      defaultEscrowTokenAccount = escrowAta;
 
       // Fund the loan
       await program.methods
@@ -445,8 +495,8 @@ describe("Sollend Micro-Lending Protocol", () => {
     });
 
     it("Marks loan as defaulted (oracle)", async () => {
-      // Wait for loan to be overdue
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait for loan to be past due (6 seconds > 5 second duration)
+      await new Promise(resolve => setTimeout(resolve, 6000));
 
       const tx = await program.methods
         .markDefault()
@@ -498,7 +548,8 @@ describe("Sollend Micro-Lending Protocol", () => {
         
         assert.fail("Should have thrown error");
       } catch (error) {
-        assert.include(error.message.toLowerCase(), "frozen");
+        // Check for frozen reputation error
+        assert.ok(error.toString().includes("ReputationFrozen") || error.toString().includes("6001"));
       }
     });
 
@@ -544,6 +595,7 @@ describe("Sollend Micro-Lending Protocol", () => {
       
       assert.ok(config.totalLoansIssued.toNumber() >= 2);
       assert.ok(config.totalVolume.toNumber() > 0);
+      // Should have 1 default from the default handling test
       assert.equal(config.totalDefaults.toNumber(), 1);
     });
   });
