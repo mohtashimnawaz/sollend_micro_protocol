@@ -1,36 +1,54 @@
-import { useEffect, useState } from 'react'
 import { useProgram } from './useProgram'
-import { PublicKey } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { PublicKey } from '@solana/web3.js'
+import { useState, useEffect } from 'react'
+import { BN } from '@coral-xyz/anchor'
+
+export interface Reputation {
+  owner: PublicKey
+  creditScore: number
+  creditTier: number
+  totalLoans: number
+  activeLoans: number
+  completedLoans: number
+  defaultedLoans: number
+  totalBorrowed: BN
+  totalRepaid: BN
+  onTimePayments: number
+  latePayments: number
+  createdAt: BN
+  lastUpdated: BN
+  isFrozen: boolean
+  bump: number
+}
 
 export function useReputation() {
   const { program } = useProgram()
-  const { publicKey } = useWallet()
-  const [reputation, setReputation] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [reputationPda, setReputationPda] = useState<PublicKey | null>(null)
+  const wallet = useWallet()
+  const [reputation, setReputation] = useState<Reputation | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadReputation()
-  }, [program, publicKey])
-
-  const loadReputation = async () => {
-    if (!program || !publicKey) {
-      setLoading(false)
+  const fetchReputation = async () => {
+    if (!program || !wallet.publicKey) {
+      setReputation(null)
       return
     }
 
     try {
-      const [pda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('reputation'), publicKey.toBuffer()],
+      setLoading(true)
+      setError(null)
+
+      const [reputationPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('reputation'), wallet.publicKey.toBuffer()],
         program.programId
       )
-      setReputationPda(pda)
 
-      const rep = await program.account.reputationAccount.fetch(pda)
-      setReputation(rep)
-    } catch (error) {
-      // Reputation doesn't exist yet
+      const account = await program.account.reputationAccount.fetch(reputationPda)
+      setReputation(account as any)
+    } catch (err: any) {
+      console.error('Error fetching reputation:', err)
+      setError(err.message)
       setReputation(null)
     } finally {
       setLoading(false)
@@ -38,44 +56,61 @@ export function useReputation() {
   }
 
   const createReputation = async () => {
-    if (!program || !publicKey || !reputationPda) return
+    if (!program || !wallet.publicKey) {
+      throw new Error('Wallet not connected')
+    }
 
     try {
-      await program.methods
+      setLoading(true)
+      setError(null)
+
+      const [reputationPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('reputation'), wallet.publicKey.toBuffer()],
+        program.programId
+      )
+
+      const tx = await program.methods
         .createReputation()
         .accounts({
           reputation: reputationPda,
-          owner: publicKey,
+          owner: wallet.publicKey,
         })
         .rpc()
 
-      await loadReputation()
-      return true
-    } catch (error) {
-      console.error('Failed to create reputation:', error)
-      return false
+      console.log('Reputation created:', tx)
+      await fetchReputation()
+      return tx
+    } catch (err: any) {
+      console.error('Error creating reputation:', err)
+      setError(err.message)
+      throw err
+    } finally {
+      setLoading(false)
     }
   }
 
-  const getTierInfo = () => {
-    if (!reputation) return null
-
-    const tiers = [
-      { name: 'A', color: 'green', minScore: 800 },
-      { name: 'B', color: 'blue', minScore: 600 },
-      { name: 'C', color: 'yellow', minScore: 400 },
-      { name: 'D', color: 'red', minScore: 0 },
-    ]
-
-    return tiers[reputation.creditTier]
+  const getCreditTierName = (tier: number): string => {
+    switch (tier) {
+      case 0: return 'D - Bronze'
+      case 1: return 'C - Silver'
+      case 2: return 'B - Gold'
+      case 3: return 'A - Platinum'
+      default: return 'Unknown'
+    }
   }
+
+  useEffect(() => {
+    if (wallet.publicKey) {
+      fetchReputation()
+    }
+  }, [wallet.publicKey, program])
 
   return {
     reputation,
-    reputationPda,
     loading,
+    error,
     createReputation,
-    refreshReputation: loadReputation,
-    tierInfo: getTierInfo(),
+    fetchReputation,
+    getCreditTierName,
   }
 }

@@ -1,194 +1,188 @@
-'use client'
-
 import Link from 'next/link'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { ProtocolStats } from '@/components/ProtocolStats'
+import { 
+  SparklesIcon, 
+  ShieldCheckIcon, 
+  BoltIcon,
+  CurrencyDollarIcon,
+  ChartBarIcon,
+  UserGroupIcon 
+} from '@heroicons/react/24/outline'
 
 export default function Home() {
-  const { connected } = useWallet()
-
   return (
-    <div className="space-y-12">
-      {/* Hero Section */}
-      <section className="text-center py-12">
-        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-          Welcome to Sollend
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-          Build your on-chain credit score and access micro-loans without collateral.
-          Lend directly to borrowers and earn competitive returns.
-        </p>
-        
-        {!connected ? (
-          <div className="space-x-4">
-            <button className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg text-lg transition-colors">
-              Connect Wallet to Get Started
-            </button>
-          </div>
-        ) : (
-          <div className="space-x-4">
-            <Link href="/borrow" className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
-              Borrow
-            </Link>
-            <Link href="/lend" className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
-              Lend
-            </Link>
-          </div>
-        )}
+    <div className="space-y-20 py-12">
+      {/* Hero Section - Cyan to Pink Gradient */}
+      <section className="text-center space-y-8 py-20">
+        <div className="space-y-6">
+          <h1 className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 animate-gradient leading-tight drop-shadow-2xl">
+            Sollend
+          </h1>
+          <p className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-pink-600 bg-clip-text text-transparent">
+            Reputation-Based Micro-Lending on Solana
+          </p>
+          <p className="text-xl text-gray-200 max-w-3xl mx-auto font-medium">
+            Build your credit on-chain, access instant liquidity, and earn yield without traditional barriers
+          </p>
+        </div>
+
+        <div className="flex items-center justify-center gap-6 pt-8">
+          <Link 
+            href="/borrow" 
+            className="group relative inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-lg font-bold rounded-xl shadow-2xl hover:shadow-cyan-500/50 transition-all hover:scale-105"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
+            <span className="relative">Start Borrowing</span>
+            <BoltIcon className="relative w-6 h-6" />
+          </Link>
+
+          <Link 
+            href="/lend" 
+            className="group relative inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white text-lg font-bold rounded-xl shadow-2xl hover:shadow-orange-500/50 transition-all hover:scale-105"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-red-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
+            <span className="relative">Earn Yield</span>
+            <ChartBarIcon className="relative w-6 h-6" />
+          </Link>
+        </div>
       </section>
 
-      {/* Features */}
-      <section className="grid md:grid-cols-3 gap-8">
-        <FeatureCard
-          icon="🏦"
-          title="No Collateral Required"
-          description="Borrow based on your reputation, not your assets. Build credit through successful repayments."
-        />
-        <FeatureCard
-          icon="📈"
-          title="Dynamic Credit Scoring"
-          description="Your on-chain credit score (0-1000) determines your interest rates and borrowing limits."
-        />
-        <FeatureCard
-          icon="🤝"
-          title="P2P Marketplace"
-          description="Lenders choose borrowers based on credit tiers. Direct matching, transparent terms."
-        />
+      {/* Features Grid - Multi-color Cards */}
+      <section className="space-y-12">
+        <h2 className="text-4xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-600">
+          Why Sollend?
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="group p-8 bg-gradient-to-br from-cyan-900/40 to-blue-900/40 backdrop-blur-xl rounded-2xl border-2 border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:scale-105 shadow-2xl">
+            <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/50">
+              <ShieldCheckIcon className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-cyan-300 mb-4">Credit Score System</h3>
+            <p className="text-gray-200">
+              Build your on-chain reputation with our dynamic credit scoring algorithm. Your history matters.
+            </p>
+          </div>
+
+          <div className="group p-8 bg-gradient-to-br from-emerald-900/40 to-teal-900/40 backdrop-blur-xl rounded-2xl border-2 border-emerald-500/30 hover:border-emerald-400/60 transition-all hover:scale-105 shadow-2xl">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/50">
+              <BoltIcon className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-emerald-300 mb-4">Instant Liquidity</h3>
+            <p className="text-gray-200">
+              Get access to funds in seconds. No paperwork, no waiting. Just connect your wallet and borrow.
+            </p>
+          </div>
+
+          <div className="group p-8 bg-gradient-to-br from-orange-900/40 to-red-900/40 backdrop-blur-xl rounded-2xl border-2 border-orange-500/30 hover:border-orange-400/60 transition-all hover:scale-105 shadow-2xl">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-orange-500/50">
+              <CurrencyDollarIcon className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-orange-300 mb-4">Flexible Terms</h3>
+            <p className="text-gray-200">
+              Choose your loan amount, duration, and collateral. Personalized terms based on your credit tier.
+            </p>
+          </div>
+        </div>
       </section>
 
-      {/* How It Works */}
-      <section className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
+      {/* How It Works - Vibrant Steps */}
+      <section className="space-y-12 p-12 bg-gradient-to-br from-fuchsia-900/30 to-purple-900/30 backdrop-blur-xl rounded-3xl border-2 border-fuchsia-500/30">
+        <h2 className="text-4xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-600">
           How It Works
         </h2>
-        <div className="grid md:grid-cols-4 gap-6">
-          <Step
-            number="1"
-            title="Create Profile"
-            description="Mint your Soulbound reputation NFT. Start with a credit score of 500 (Tier C)."
-          />
-          <Step
-            number="2"
-            title="Request Loan"
-            description="Submit a loan request with amount, duration, and max interest rate you'll accept."
-          />
-          <Step
-            number="3"
-            title="Get Funded"
-            description="Lenders review and fund your loan. Funds held in secure escrow until withdrawal."
-          />
-          <Step
-            number="4"
-            title="Build Credit"
-            description="Repay on time to increase your score (+50). Better credit = better rates!"
-          />
+
+        <div className="grid md:grid-cols-4 gap-8">
+          {[
+            { step: '01', title: 'Connect Wallet', desc: 'Link your Solana wallet to get started', color: 'from-cyan-400 to-blue-600', border: 'border-cyan-400', text: 'text-cyan-300' },
+            { step: '02', title: 'Check Credit', desc: 'View your on-chain credit score and tier', color: 'from-emerald-400 to-teal-600', border: 'border-emerald-400', text: 'text-emerald-300' },
+            { step: '03', title: 'Request Loan', desc: 'Choose amount, duration, and collateral', color: 'from-orange-400 to-red-600', border: 'border-orange-400', text: 'text-orange-300' },
+            { step: '04', title: 'Get Funded', desc: 'Receive funds instantly from lenders', color: 'from-fuchsia-400 to-pink-600', border: 'border-fuchsia-400', text: 'text-fuchsia-300' },
+          ].map((item) => (
+            <div key={item.step} className="text-center space-y-4">
+              <div className={`w-20 h-20 mx-auto bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-2xl border-4 ${item.border}`}>
+                {item.step}
+              </div>
+              <h3 className={`text-xl font-bold ${item.text}`}>{item.title}</h3>
+              <p className="text-gray-200 text-sm">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Credit Tiers */}
-      <section className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
-          Credit Tier System
+      {/* Credit Tiers - Distinct Color-Coded Cards */}
+      <section className="space-y-12">
+        <h2 className="text-4xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-600">
+          Credit Tiers
         </h2>
+
         <div className="grid md:grid-cols-4 gap-6">
-          <TierCard
-            tier="A"
-            score="800-1000"
-            rate="5%"
-            limit="100"
-            color="green"
-          />
-          <TierCard
-            tier="B"
-            score="600-799"
-            rate="7%"
-            limit="50"
-            color="blue"
-          />
-          <TierCard
-            tier="C"
-            score="400-599"
-            rate="10%"
-            limit="25"
-            color="yellow"
-          />
-          <TierCard
-            tier="D"
-            score="0-399"
-            rate="15%"
-            limit="10"
-            color="red"
-          />
+          {[
+            { tier: 'A', name: 'Platinum', score: '750+', ltv: '80%', rate: '5%', gradient: 'from-emerald-400 to-teal-600', bg: 'from-emerald-900/40 to-teal-900/40', border: 'border-emerald-400/50', text: 'text-emerald-300' },
+            { tier: 'B', name: 'Gold', score: '650-749', ltv: '70%', rate: '8%', gradient: 'from-cyan-400 to-blue-600', bg: 'from-cyan-900/40 to-blue-900/40', border: 'border-cyan-400/50', text: 'text-cyan-300' },
+            { tier: 'C', name: 'Silver', score: '550-649', ltv: '60%', rate: '12%', gradient: 'from-yellow-400 to-orange-600', bg: 'from-yellow-900/40 to-orange-900/40', border: 'border-yellow-400/50', text: 'text-yellow-300' },
+            { tier: 'D', name: 'Bronze', score: '< 550', ltv: '50%', rate: '15%', gradient: 'from-orange-400 to-red-600', bg: 'from-orange-900/40 to-red-900/40', border: 'border-orange-400/50', text: 'text-orange-300' },
+          ].map((item) => (
+            <div key={item.tier} className={`group p-6 bg-gradient-to-br ${item.bg} backdrop-blur-xl rounded-2xl border-3 ${item.border} hover:border-opacity-100 transition-all hover:scale-105 shadow-2xl`}>
+              <div className={`w-16 h-16 mx-auto bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center text-3xl font-black text-white mb-4 shadow-2xl border-4 border-white/20`}>
+                {item.tier}
+              </div>
+              <h3 className={`text-2xl font-bold ${item.text} text-center mb-2`}>{item.name}</h3>
+              <p className="text-gray-200 text-center text-sm mb-4 font-semibold">Score: {item.score}</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-300">Max LTV:</span>
+                  <span className="text-white font-bold">{item.ltv}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-300">APR:</span>
+                  <span className="text-white font-bold">{item.rate}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Protocol Stats */}
-      <ProtocolStats />
+      {/* Stats - Colorful Metric Cards */}
+      <section className="grid md:grid-cols-3 gap-8">
+        {[
+          { label: 'Total Value Locked', value: '$12.5M', icon: CurrencyDollarIcon, gradient: 'from-cyan-400 to-blue-600', bg: 'from-cyan-900/40 to-blue-900/40', border: 'border-cyan-400/50' },
+          { label: 'Active Loans', value: '1,234', icon: ChartBarIcon, gradient: 'from-emerald-400 to-teal-600', bg: 'from-emerald-900/40 to-teal-900/40', border: 'border-emerald-400/50' },
+          { label: 'Total Users', value: '5,678', icon: UserGroupIcon, gradient: 'from-fuchsia-400 to-pink-600', bg: 'from-fuchsia-900/40 to-pink-900/40', border: 'border-fuchsia-400/50' },
+        ].map((stat) => (
+          <div key={stat.label} className={`p-8 bg-gradient-to-br ${stat.bg} backdrop-blur-xl rounded-2xl border-2 ${stat.border} text-center space-y-4 hover:scale-105 transition-transform shadow-2xl`}>
+            <stat.icon className={`w-12 h-12 mx-auto text-transparent bg-clip-text bg-gradient-to-r ${stat.gradient}`} style={{ WebkitTextStroke: '2px currentColor' }} />
+            <div className={`text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r ${stat.gradient}`}>
+              {stat.value}
+            </div>
+            <div className="text-gray-200 text-lg font-semibold">{stat.label}</div>
+          </div>
+        ))}
+      </section>
 
-      {/* CTA */}
-      {connected && (
-        <section className="text-center py-12 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-          <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+      {/* CTA Section - High Contrast Orange-Pink Gradient */}
+      <section className="relative overflow-hidden rounded-3xl p-16 bg-gradient-to-r from-orange-500 via-red-600 to-pink-600 text-center space-y-8 shadow-2xl border-4 border-orange-400/50">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{ backgroundImage: 'url(/grid.svg)', backgroundSize: '30px 30px' }}></div>
+        </div>
+        
+        <div className="relative z-10 space-y-6">
+          <h2 className="text-5xl font-black text-white drop-shadow-2xl">
             Ready to Get Started?
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Create your reputation profile and start building credit today.
+          <p className="text-2xl text-white font-bold max-w-2xl mx-auto">
+            Join thousands of users building their credit on-chain
           </p>
-          <Link href="/borrow" className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
-            Create Your Profile
+          
+          <Link 
+            href="/borrow" 
+            className="inline-flex items-center gap-2 px-10 py-5 bg-white text-orange-600 text-xl font-black rounded-xl shadow-2xl hover:shadow-white/80 transition-all hover:scale-110 border-4 border-orange-200"
+          >
+            Launch App
+            <SparklesIcon className="w-6 h-6" />
           </Link>
-        </section>
-      )}
-    </div>
-  )
-}
-
-function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
-  return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
-      <div className="text-4xl mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
-      <p className="text-gray-600 dark:text-gray-300">{description}</p>
-    </div>
-  )
-}
-
-function Step({ number, title, description }: { number: string; title: string; description: string }) {
-  return (
-    <div className="text-center">
-      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-600 text-white font-bold text-xl mb-4">
-        {number}
-      </div>
-      <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
-      <p className="text-sm text-gray-600 dark:text-gray-300">{description}</p>
-    </div>
-  )
-}
-
-function TierCard({ tier, score, rate, limit, color }: { tier: string; score: string; rate: string; limit: string; color: string }) {
-  const colorClasses = {
-    green: 'bg-green-50 border-green-300 dark:bg-green-900/20',
-    blue: 'bg-blue-50 border-blue-300 dark:bg-blue-900/20',
-    yellow: 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20',
-    red: 'bg-red-50 border-red-300 dark:bg-red-900/20',
-  }
-
-  return (
-    <div className={`border-2 rounded-lg p-6 ${colorClasses[color as keyof typeof colorClasses]}`}>
-      <div className="text-center">
-        <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Tier {tier}</h3>
-        <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">Score: {score}</div>
-        <div className="space-y-2">
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Interest Rate</div>
-            <div className="text-lg font-semibold text-gray-900 dark:text-white">{rate}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Max Borrow</div>
-            <div className="text-lg font-semibold text-gray-900 dark:text-white">{limit} tokens</div>
-          </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

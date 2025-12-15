@@ -1,192 +1,36 @@
-# Sollend Frontend
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-React/Next.js frontend for the Sollend Micro-Lending Protocol.
+## Getting Started
 
-## Features
-
-- 🏠 **Landing Page**: Protocol overview and statistics
-- 💳 **Borrow Page**: Create reputation, request loans, manage credit
-- 💰 **Lend Page**: Browse and fund loan requests
-- 📊 **Dashboard**: View your loans and activity
-- 📈 **Stats Page**: Protocol-wide analytics
-
-## Tech Stack
-
-- Next.js 14 (App Router)
-- React 18
-- TypeScript
-- Tailwind CSS
-- Solana Wallet Adapter
-- Anchor Client
-
-## Setup
-
-### 1. Install Dependencies
-
-```bash
-cd frontend
-npm install
-```
-
-### 2. Configure Environment
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
-```env
-NEXT_PUBLIC_SOLANA_NETWORK=devnet
-NEXT_PUBLIC_RPC_URL=https://api.devnet.solana.com
-NEXT_PUBLIC_PROGRAM_ID=YOUR_PROGRAM_ID
-```
-
-### 3. Copy IDL
-
-The frontend needs the program IDL to interact with the smart contract:
-
-```bash
-# From the project root
-cp target/idl/sollend_micro_protocol.json frontend/
-```
-
-### 4. Run Development Server
+First, run the development server:
 
 ```bash
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Pages
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### Home (`/`)
-- Protocol overview
-- Feature highlights
-- Credit tier explanation
-- How it works guide
-- Protocol statistics
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-### Borrow (`/borrow`)
-- Create reputation NFT
-- View credit profile
-- Create loan requests
-- View borrowing history
+## Learn More
 
-### Lend (`/lend`)
-- Browse loan requests
-- Filter by credit tier
-- Fund loans with custom rates
-- Track investments
+To learn more about Next.js, take a look at the following resources:
 
-### Dashboard (`/dashboard`)
-- Active loans
-- Loan history
-- Repayment management
-- Credit score tracking
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### Stats (`/stats`)
-- Protocol-wide statistics
-- Credit tier distribution
-- Volume charts
-- Default rates
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Key Components
+## Deploy on Vercel
 
-### `WalletProvider`
-Wraps app with Solana wallet context
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-### `Navigation`
-Top navigation bar with wallet connect button
-
-### `ProtocolStats`
-Displays real-time protocol statistics
-
-### Hooks
-
-#### `useProgram`
-Returns initialized Anchor program instance
-
-#### `useReputation`
-Manages user reputation (create, fetch, refresh)
-
-## Building for Production
-
-```bash
-npm run build
-npm run start
-```
-
-## Deployment
-
-### Vercel (Recommended)
-
-```bash
-npm install -g vercel
-vercel
-```
-
-### Static Export
-
-```bash
-# Add to next.config.js:
-# output: 'export'
-
-npm run build
-# Deploy the 'out' directory
-```
-
-## Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_SOLANA_NETWORK` | Solana network | `devnet` / `mainnet-beta` |
-| `NEXT_PUBLIC_RPC_URL` | RPC endpoint | `https://api.devnet.solana.com` |
-| `NEXT_PUBLIC_PROGRAM_ID` | Deployed program ID | `vig2E...` |
-
-## Wallet Support
-
-- Phantom
-- Solflare
-- (Easily extend with more adapters)
-
-## Styling
-
-- **Framework**: Tailwind CSS
-- **Theme**: Light/Dark mode support
-- **Components**: Custom utility classes for tiers and states
-
-## Future Enhancements
-
-- [ ] Real-time notifications
-- [ ] Advanced filtering and search
-- [ ] Loan analytics charts
-- [ ] Mobile-responsive improvements
-- [ ] Multi-language support
-- [ ] Email notifications
-- [ ] Activity feed
-
-## Troubleshooting
-
-### Wallet not connecting
-- Ensure wallet extension is installed
-- Check network matches (devnet/mainnet)
-- Clear browser cache
-
-### Program not found
-- Verify `NEXT_PUBLIC_PROGRAM_ID` is correct
-- Ensure program is deployed to selected network
-- Check IDL file is present
-
-### Transaction errors
-- Ensure wallet has SOL for fees
-- Check program state (not paused)
-- Verify account permissions
-
-## Contributing
-
-See main project [CONTRIBUTING.md](../CONTRIBUTING.md)
-
-## License
-
-MIT
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

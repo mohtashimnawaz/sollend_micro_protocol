@@ -1,237 +1,140 @@
 'use client'
 
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useProgram } from '@/hooks/useProgram'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { PublicKey } from '@solana/web3.js'
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { ChartBarIcon, CurrencyDollarIcon, UserGroupIcon, BanknotesIcon } from '@heroicons/react/24/outline'
+
+interface ProtocolStats {
+  totalLoansIssued: number
+  totalVolume: number
+  totalDefaults: number
+  isPaused: boolean
+}
 
 export default function StatsPage() {
+  const wallet = useWallet()
   const { program } = useProgram()
-  const [stats, setStats] = useState<any>(null)
-  const [loans, setLoans] = useState<any[]>([])
-  const [reputations, setReputations] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<ProtocolStats | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [program])
-
-  const loadData = async () => {
+  const fetchStats = async () => {
     if (!program) return
 
     try {
+      setLoading(true)
       const [configPda] = PublicKey.findProgramAddressSync(
         [Buffer.from('config')],
         program.programId
       )
 
       const config = await program.account.protocolConfig.fetch(configPda)
-      const allLoans = await program.account.loanAccount.all()
-      const allReps = await program.account.reputationAccount.all()
-
-      setStats(config)
-      setLoans(allLoans.map((l: any) => l.account))
-      setReputations(allReps.map((r: any) => r.account))
+      setStats({
+        totalLoansIssued: config.totalLoansIssued.toNumber(),
+        totalVolume: config.totalVolume.toNumber() / 1e9,
+        totalDefaults: config.totalDefaults.toNumber(),
+        isPaused: config.isPaused,
+      })
     } catch (error) {
-      console.error('Failed to load data:', error)
+      console.error('Error fetching stats:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="text-lg">Loading statistics...</div>
-      </div>
-    )
-  }
-
-  if (!stats) {
-    return (
-      <div className="text-center py-12">
-        <div className="text-lg text-red-600">Failed to load statistics</div>
-      </div>
-    )
-  }
-
-  // Calculate statistics
-  const tierDistribution = [
-    { name: 'Tier A', value: reputations.filter(r => r.creditTier === 0).length, color: '#10b981' },
-    { name: 'Tier B', value: reputations.filter(r => r.creditTier === 1).length, color: '#3b82f6' },
-    { name: 'Tier C', value: reputations.filter(r => r.creditTier === 2).length, color: '#f59e0b' },
-    { name: 'Tier D', value: reputations.filter(r => r.creditTier === 3).length, color: '#ef4444' },
-  ]
-
-  const loanStates = [
-    { name: 'Requested', value: loans.filter(l => l.state.requested).length },
-    { name: 'Funded', value: loans.filter(l => l.state.funded).length },
-    { name: 'Active', value: loans.filter(l => l.state.active).length },
-    { name: 'Repaid', value: loans.filter(l => l.state.repaid).length },
-    { name: 'Defaulted', value: loans.filter(l => l.state.defaulted).length },
-  ]
-
-  const totalVolume = (stats.totalVolume.toNumber() / 1e9).toFixed(2)
-  const activeVolume = loans
-    .filter(l => l.state.active || l.state.funded)
-    .reduce((sum, l) => sum + l.amount.toNumber() / 1e9, 0)
-    .toFixed(2)
-
-  const avgCreditScore = reputations.length > 0
-    ? (reputations.reduce((sum, r) => sum + r.creditScore, 0) / reputations.length).toFixed(0)
-    : 0
-
-  const defaultRate = stats.totalLoansIssued > 0
-    ? ((stats.totalDefaults / stats.totalLoansIssued) * 100).toFixed(2)
-    : 0
+  useEffect(() => {
+    fetchStats()
+  }, [program])
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">Protocol Statistics</h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Real-time analytics and insights
-        </p>
-      </div>
+    <div className="p-8 space-y-8">
+      <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-600 mb-8">
+        Protocol Statistics
+      </h1>
 
-      {/* Key Metrics */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard 
-          title="Total Volume" 
-          value={`${totalVolume} tokens`}
-          change="+12% this month"
-          icon="💰"
-          color="green"
-        />
-        <MetricCard 
-          title="Active Volume" 
-          value={`${activeVolume} tokens`}
-          change="Currently deployed"
-          icon="🔄"
-          color="blue"
-        />
-        <MetricCard 
-          title="Total Users" 
-          value={reputations.length}
-          change={`Avg score: ${avgCreditScore}`}
-          icon="👥"
-          color="purple"
-        />
-        <MetricCard 
-          title="Default Rate" 
-          value={`${defaultRate}%`}
-          change={`${stats.totalDefaults} total`}
-          icon="⚠️"
-          color="red"
-        />
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Credit Tier Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4">Credit Tier Distribution</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={tierDistribution}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={(entry) => `${entry.name}: ${entry.value}`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {tierDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+      {loading ? (
+        <div className="glass-dark p-12 rounded-3xl border border-white/10 text-center">
+          <p className="text-2xl text-white font-bold">Loading statistics...</p>
         </div>
-
-        {/* Loan States */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4">Loan States</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={loanStates}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Protocol Details */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Protocol Details</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <DetailItem label="Total Loans Issued" value={stats.totalLoansIssued.toString()} />
-          <DetailItem label="Protocol Fee" value={`${stats.protocolFeeBps / 100}%`} />
-          <DetailItem label="Max Loan Duration" value={`${stats.maxLoanDuration.toNumber() / 86400} days`} />
-          <DetailItem label="Grace Period" value={`${stats.defaultGracePeriod.toNumber() / 86400} days`} />
-          <DetailItem label="Default Penalty" value={`${stats.defaultPenaltyBps / 100}%`} />
-          <DetailItem label="Protocol Paused" value={stats.isPaused ? 'Yes' : 'No'} />
-        </div>
-      </div>
-
-      {/* Top Borrowers */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Top Credit Scores</h2>
-        <div className="space-y-3">
-          {reputations
-            .sort((a, b) => b.creditScore - a.creditScore)
-            .slice(0, 10)
-            .map((rep, idx) => (
-              <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-gray-500">#{idx + 1}</span>
-                  <span className="font-mono text-sm">{rep.owner.toString().slice(0, 8)}...</span>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <span className={`tier-${['a', 'b', 'c', 'd'][rep.creditTier]} px-3 py-1 rounded-full text-xs font-semibold`}>
-                    Tier {['A', 'B', 'C', 'D'][rep.creditTier]}
-                  </span>
-                  <span className="font-bold">{rep.creditScore}</span>
-                </div>
+      ) : stats ? (
+        <>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 backdrop-blur-xl rounded-2xl border-2 border-cyan-500/30 p-6 hover:scale-105 transition-transform">
+              <div className="flex items-center gap-3 mb-4">
+                <ChartBarIcon className="w-10 h-10 text-cyan-400" />
+                <h3 className="text-lg font-bold text-cyan-300">Total Loans</h3>
               </div>
-            ))}
+              <p className="text-4xl font-black text-white mb-2">{stats.totalLoansIssued}</p>
+              <p className="text-gray-400 text-sm">Loans issued</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/40 backdrop-blur-xl rounded-2xl border-2 border-emerald-500/30 p-6 hover:scale-105 transition-transform">
+              <div className="flex items-center gap-3 mb-4">
+                <CurrencyDollarIcon className="w-10 h-10 text-emerald-400" />
+                <h3 className="text-lg font-bold text-emerald-300">Total Volume</h3>
+              </div>
+              <p className="text-4xl font-black text-white mb-2">{stats.totalVolume.toFixed(2)}</p>
+              <p className="text-gray-400 text-sm">SOL lent</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-900/40 to-red-900/40 backdrop-blur-xl rounded-2xl border-2 border-orange-500/30 p-6 hover:scale-105 transition-transform">
+              <div className="flex items-center gap-3 mb-4">
+                <BanknotesIcon className="w-10 h-10 text-orange-400" />
+                <h3 className="text-lg font-bold text-orange-300">Defaults</h3>
+              </div>
+              <p className="text-4xl font-black text-white mb-2">{stats.totalDefaults}</p>
+              <p className="text-gray-400 text-sm">Total defaults</p>
+            </div>
+
+            <div className={`bg-gradient-to-br ${stats.isPaused ? 'from-red-900/40 to-pink-900/40 border-red-500/30' : 'from-emerald-900/40 to-teal-900/40 border-emerald-500/30'} backdrop-blur-xl rounded-2xl border-2 p-6 hover:scale-105 transition-transform`}>
+              <div className="flex items-center gap-3 mb-4">
+                <UserGroupIcon className={`w-10 h-10 ${stats.isPaused ? 'text-red-400' : 'text-emerald-400'}`} />
+                <h3 className={`text-lg font-bold ${stats.isPaused ? 'text-red-300' : 'text-emerald-300'}`}>Status</h3>
+              </div>
+              <p className={`text-3xl font-black mb-2 ${stats.isPaused ? 'text-red-400' : 'text-emerald-400'}`}>
+                {stats.isPaused ? 'PAUSED' : 'ACTIVE'}
+              </p>
+              <p className="text-gray-400 text-sm">Protocol status</p>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-fuchsia-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl border-2 border-fuchsia-500/30 p-8">
+            <h2 className="text-2xl font-bold text-fuchsia-300 mb-6">Performance Metrics</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-gray-400 text-sm mb-2">Default Rate</p>
+                <p className="text-3xl font-black text-white">
+                  {stats.totalLoansIssued > 0 
+                    ? ((stats.totalDefaults / stats.totalLoansIssued) * 100).toFixed(2)
+                    : '0.00'}%
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm mb-2">Average Loan Size</p>
+                <p className="text-3xl font-black text-white">
+                  {stats.totalLoansIssued > 0
+                    ? (stats.totalVolume / stats.totalLoansIssued).toFixed(2)
+                    : '0.00'} SOL
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm mb-2">Success Rate</p>
+                <p className="text-3xl font-black text-emerald-400">
+                  {stats.totalLoansIssued > 0
+                    ? (((stats.totalLoansIssued - stats.totalDefaults) / stats.totalLoansIssued) * 100).toFixed(2)
+                    : '100.00'}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="glass-dark p-12 rounded-3xl border border-white/10 text-center">
+          <p className="text-2xl text-white font-bold mb-4">No Data Available</p>
+          <p className="text-gray-300">Protocol configuration not found or not initialized.</p>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function MetricCard({ title, value, change, icon, color }: { 
-  title: string; 
-  value: any; 
-  change: string; 
-  icon: string; 
-  color: string 
-}) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-      <div className="flex items-start justify-between mb-2">
-        <div className="text-3xl">{icon}</div>
-      </div>
-      <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{title}</div>
-      <div className={`text-2xl font-bold text-${color}-600 mb-1`}>{value}</div>
-      <div className="text-xs text-gray-500">{change}</div>
-    </div>
-  )
-}
-
-function DetailItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">{label}</div>
-      <div className="text-lg font-semibold text-gray-900 dark:text-white">{value}</div>
+      )}
     </div>
   )
 }

@@ -1,26 +1,26 @@
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import { AnchorProvider, Program, setProvider } from '@coral-xyz/anchor'
 import { useMemo } from 'react'
-import { AnchorProvider, Program } from '@coral-xyz/anchor'
-import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react'
+import idl from '../idl/sollend_micro_protocol.json'
 import { PublicKey } from '@solana/web3.js'
-import idl from '../../../target/idl/sollend_micro_protocol.json'
 
 export function useProgram() {
   const { connection } = useConnection()
-  const wallet = useAnchorWallet()
+  const wallet = useWallet()
 
-  const program = useMemo(() => {
+  const provider = useMemo(() => {
     if (!wallet) return null
-
-    const provider = new AnchorProvider(connection, wallet, {
+    return new AnchorProvider(connection, wallet as any, {
       commitment: 'confirmed',
     })
-
-    const programId = new PublicKey(
-      process.env.NEXT_PUBLIC_PROGRAM_ID || idl.metadata.address
-    )
-
-    return new Program(idl as any, programId, provider)
   }, [connection, wallet])
 
-  return { program, wallet }
+  const program = useMemo(() => {
+    if (!provider) return null
+    setProvider(provider)
+    const programId = new PublicKey(idl.address)
+    return new Program(idl as any, programId, provider)
+  }, [provider])
+
+  return { program, provider }
 }
