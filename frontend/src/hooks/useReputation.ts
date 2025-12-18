@@ -30,7 +30,12 @@ export function useReputation() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchReputation = async () => {
-    if (!program || !wallet.publicKey) {
+    if (!wallet.publicKey) {
+      setReputation(null)
+      return
+    }
+
+    if (!program) {
       setReputation(null)
       return
     }
@@ -100,7 +105,7 @@ export function useReputation() {
   }
 
   useEffect(() => {
-    if (wallet.publicKey) {
+    if (wallet.publicKey && program) {
       fetchReputation()
     }
   }, [wallet.publicKey, program])

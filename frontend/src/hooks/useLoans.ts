@@ -31,7 +31,12 @@ export function useLoans() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchLoans = async () => {
-    if (!program || !wallet.publicKey) {
+    if (!wallet.publicKey) {
+      setLoans([])
+      return
+    }
+
+    if (!program) {
       setLoans([])
       return
     }
@@ -126,7 +131,7 @@ export function useLoans() {
   }
 
   useEffect(() => {
-    if (wallet.publicKey) {
+    if (wallet.publicKey && program) {
       fetchLoans()
     }
   }, [wallet.publicKey, program])
